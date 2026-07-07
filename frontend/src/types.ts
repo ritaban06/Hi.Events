@@ -522,6 +522,7 @@ export interface Product {
     order?: number;
     title: string;
     event_id?: IdParam;
+    images?: Image[];
     // todo - rename to price_type
     type: ProductPriceType;
     product_type: ProductType;

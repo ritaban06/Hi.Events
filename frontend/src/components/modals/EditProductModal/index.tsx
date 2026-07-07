@@ -13,6 +13,10 @@ import {useGetProduct} from "../../../queries/useGetProduct.ts";
 import {LoadingMask} from "../../common/LoadingMask";
 import {utcToTz} from "../../../utilites/dates.ts";
 import {useGetEvent} from "../../../queries/useGetEvent.ts";
+import {ImageUploadDropzone} from "../../common/ImageUploadDropzone";
+import {queryClient} from "../../../utilites/queryClient.ts";
+import {Fieldset} from "../../common/Fieldset";
+import {IconPhoto} from "@tabler/icons-react";
 
 export const EditProductModal = ({onClose, productId}: GenericModalProps & { productId: IdParam }) => {
     const {eventId} = useParams();
@@ -108,6 +112,29 @@ export const EditProductModal = ({onClose, productId}: GenericModalProps & { pro
         >
             <form onSubmit={form.onSubmit(handleEditProduct)}>
                 <ProductForm product={product} form={form}/>
+                
+                {product && (
+                    <Fieldset mt={20} legend={
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <IconPhoto size={16}/>
+                            {t`Product Image`}
+                        </span>
+                    }>
+                        <ImageUploadDropzone
+                            imageType="PRODUCT_IMAGE"
+                            entityId={product.id}
+                            onUploadSuccess={() => queryClient.invalidateQueries()}
+                            onDeleteSuccess={() => queryClient.invalidateQueries()}
+                            existingImageData={{
+                                url: product.images?.[0]?.url,
+                                id: product.images?.[0]?.id,
+                            }}
+                            helpText={t`This image will be displayed on the public product card. Max size 5MB.`}
+                            displayMode="compact"
+                        />
+                    </Fieldset>
+                )}
+
                 <LoadingMask/>
 
                 <Button type="submit" fullWidth mt="xl" disabled={mutation.isPending}>

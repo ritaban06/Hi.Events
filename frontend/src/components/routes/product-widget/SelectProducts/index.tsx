@@ -438,8 +438,9 @@ const SelectProducts = (props: SelectProductsProps) => {
                                                 .map((n) => n.toString());
                                             quantityRange.unshift("0");
 
-                                            const coverImageData = event.images?.find(img => img.type === 'EVENT_COVER');
-                                            const coverImage = coverImageData?.url;
+                                            const productImage = product.images?.[0]?.url;
+                                            const eventCoverImage = event.images?.find(img => img.type === 'EVENT_COVER')?.url;
+                                            const coverImage = productImage || eventCoverImage;
 
                                             return (
                                                 <div key={product.id} className={`hi-product-row ${product.is_highlighted ? 'hi-product-highlighted' : ''}`}>
