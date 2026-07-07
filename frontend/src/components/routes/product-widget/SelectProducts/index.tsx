@@ -452,8 +452,6 @@ const SelectProducts = (props: SelectProductsProps) => {
                                                             style={{
                                                                 width: '100%',
                                                                 height: 'auto',
-                                                                maxHeight: '400px',
-                                                                objectFit: 'contain',
                                                                 borderBottom: '1px solid var(--widget-primary-color, var(--hi-secondary))',
                                                                 display: 'block'
                                                             }}
