@@ -3,10 +3,27 @@ use Carbon\Carbon;
 use HiEvents\Helper\Currency;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Str;
+use HiEvents\Helper\Url;
 
 /** @var \HiEvents\DomainObjects\EventDomainObject $event */
 /** @var \HiEvents\DomainObjects\EventSettingDomainObject $eventSettings */
 /** @var \Illuminate\Support\Collection<\HiEvents\DomainObjects\AttendeeDomainObject> $attendees */
+
+$ticketDesignSettings = $eventSettings->getTicketDesignSettings() ?? [];
+$accentColor = $ticketDesignSettings['accent_color'] ?? '#6B46C1';
+$footerText = $ticketDesignSettings['footer_text'] ?? null;
+$dateDisplayMode = $ticketDesignSettings['date_display_mode'] ?? 'START_DATE_TIME';
+
+$eventCoverUrl = null;
+if ($event->getImages()) {
+    foreach ($event->getImages() as $image) {
+        if ($image->getType() === 'EVENT_COVER') {
+            $eventCoverUrl = Url::getCdnUrl($image->getPath());
+        } elseif ($image->getType() === 'TICKET_LOGO' && !$eventCoverUrl) {
+            $eventCoverUrl = Url::getCdnUrl($image->getPath());
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -51,7 +68,7 @@ use Illuminate\Support\Str;
 
         .header {
             padding: 24px;
-            color: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
         }
 
         .header-content {
@@ -75,6 +92,7 @@ use Illuminate\Support\Str;
         .event-title {
             font-size: 24px;
             font-weight: bold;
+            color: #1f2937;
             margin: 0;
         }
 
@@ -86,16 +104,15 @@ use Illuminate\Support\Str;
 
         .content-left {
             display: table-cell;
-            width: 60%;
+            width: 55%;
             vertical-align: top;
             padding-right: 24px;
         }
 
         .content-right {
             display: table-cell;
-            width: 40%;
+            width: 45%;
             vertical-align: top;
-            border-left: 1px dashed #e5e7eb;
             padding-left: 24px;
             text-align: center;
         }
@@ -120,8 +137,9 @@ use Illuminate\Support\Str;
 
         .attendee-section {
             margin-top: 24px;
-            padding-top: 24px;
-            border-top: 1px solid #f3f4f6;
+            padding: 16px;
+            background-color: #f8fafc;
+            border-radius: 6px;
         }
 
         .attendee-name {
@@ -133,7 +151,16 @@ use Illuminate\Support\Str;
         .attendee-email {
             font-size: 14px;
             color: #6b7280;
-            margin-top: 2px;
+            margin-top: 4px;
+        }
+
+        .event-banner {
+            width: 100%;
+            height: auto;
+            max-height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 16px;
         }
 
         .qr-section {
@@ -144,19 +171,22 @@ use Illuminate\Support\Str;
             display: inline-block;
             padding: 12px;
             border: 2px solid;
-            border-radius: 8px;
             background: #ffffff;
             margin-bottom: 16px;
         }
 
         .ticket-id {
-            margin-top: 16px;
+            margin-top: 8px;
         }
 
         .ticket-id-value {
-            font-size: 16px;
+            display: inline-block;
+            font-size: 14px;
             font-weight: bold;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.05em;
+            background-color: #faf5ff;
+            padding: 6px 16px;
+            border-radius: 4px;
         }
 
         .footer {
@@ -195,10 +225,7 @@ use Illuminate\Support\Str;
 <body>
 
 @php
-    $ticketDesignSettings = $eventSettings->getTicketDesignSettings();
-    $accentColor = $ticketDesignSettings['accent_color'] ?? '#6B46C1';
-    $footerText = $ticketDesignSettings['footer_text'] ?? null;
-    $dateDisplayMode = $ticketDesignSettings['date_display_mode'] ?? 'START_DATE_TIME';
+    // The variables are already initialized at the top of the file
 @endphp
 
 @foreach($attendees as $attendee)
@@ -220,12 +247,12 @@ use Illuminate\Support\Str;
     @endphp
     <div class="ticket-page">
         <div class="ticket-container">
-            <div class="header" style="background-color: {{ $accentColor }};">
+            <div class="header">
                 <div class="header-content">
                     <div class="header-left">
                         <h1 class="event-title">{{ $event->getTitle() }}</h1>
                     </div>
-                    <div class="header-right">
+                    <div class="header-right" style="color: {{ $accentColor }};">
                         @if($price > 0)
                             {{ Currency::format($price, $event->getCurrency()) }}
                         @else
@@ -284,6 +311,10 @@ use Illuminate\Support\Str;
                 </div>
 
                 <div class="content-right">
+                    @if($eventCoverUrl)
+                        <img src="{{ $eventCoverUrl }}" class="event-banner" alt="Event Banner" />
+                    @endif
+                    
                     <div class="qr-section">
                         @if($isCancelled || $isAwaitingPayment)
                             <div class="status-placeholder">
@@ -299,7 +330,7 @@ use Illuminate\Support\Str;
 
                         <div class="ticket-id">
                             <div class="detail-label">{{ __('Ticket ID') }}</div>
-                            <div class="ticket-id-value" style="color: {{ $accentColor }};">
+                            <div class="ticket-id-value" style="color: {{ $accentColor }}; background-color: {{ $accentColor }}10;">
                                 {{ $attendee->getPublicId() }}
                             </div>
                         </div>
