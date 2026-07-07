@@ -12,12 +12,15 @@ use HiEvents\Helper\StringHelper;
 use HiEvents\Helper\Url;
 use HiEvents\Mail\BaseMail;
 use HiEvents\Services\Domain\Email\DTO\RenderedEmailTemplateDTO;
+use HiEvents\Services\Domain\Ticket\GenerateOrderTicketsPdfService;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 use Spatie\IcalendarGenerator\Components\Calendar;
 use Spatie\IcalendarGenerator\Components\Event;
+use Throwable;
 
 /**
  * @uses /backend/resources/views/emails/orders/attendee-ticket.blade.php
@@ -32,6 +35,8 @@ class AttendeeTicketMail extends BaseMail
         private readonly EventDomainObject        $event,
         private readonly EventSettingDomainObject $eventSettings,
         private readonly OrganizerDomainObject    $organizer,
+        private readonly GenerateOrderTicketsPdfService $generateOrderTicketsPdfService,
+        private readonly LoggerInterface $logger,
         ?RenderedEmailTemplateDTO                 $renderedTemplate = null,
     )
     {
@@ -84,6 +89,29 @@ class AttendeeTicketMail extends BaseMail
 
     public function attachments(): array
     {
+        $attachments = [];
+
+        try {
+            $ticketPdf = $this->generateOrderTicketsPdfService->generate(
+                order: $this->order,
+                event: $this->event,
+                eventSettings: $this->eventSettings,
+                fallbackAttendee: $this->attendee,
+            );
+
+            $attachments[] = Attachment::fromData(
+                static fn() => $ticketPdf->content,
+                $ticketPdf->filename,
+            )->withMime('application/pdf');
+        } catch (Throwable $exception) {
+            $this->logger->error('Failed to generate ticket PDF attachment for attendee email', [
+                'exception' => $exception,
+                'order_id' => $this->order->getId(),
+                'attendee_id' => $this->attendee->getId(),
+                'event_id' => $this->event->getId(),
+            ]);
+        }
+
         $startDateTime = Carbon::parse($this->event->getStartDate(), $this->event->getTimezone());
         $endDateTime = $this->event->getEndDate() ? Carbon::parse($this->event->getEndDate(), $this->event->getTimezone()) : null;
 
@@ -110,9 +138,9 @@ class AttendeeTicketMail extends BaseMail
             ->event($event)
             ->get();
 
-        return [
-            Attachment::fromData(static fn() => $calendar, 'event.ics')
-                ->withMime('text/calendar')
-        ];
+        $attachments[] = Attachment::fromData(static fn() => $calendar, 'event.ics')
+            ->withMime('text/calendar');
+
+        return $attachments;
     }
 }
