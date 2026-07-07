@@ -63,13 +63,14 @@ export const QRScannerComponent = (props: QRScannerComponentProps) => {
 
     const startScanner = async () => {
         try {
-            await navigator.mediaDevices.getUserMedia({video: true});
+            await navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}});
             setPermissionGranted(true);
             if (videoRef.current) {
                 qrScannerRef.current = new QrScanner(videoRef.current, (result) => {
                     setCurrentAttendeeId(result.data);
                 }, {
                     maxScansPerSecond: 1,
+                    preferredCamera: 'environment',
                 });
                 qrScannerRef.current.start();
             }
