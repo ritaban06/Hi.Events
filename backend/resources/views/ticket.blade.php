@@ -293,7 +293,7 @@ use Illuminate\Support\Str;
                             </div>
                         @else
                             <div class="qr-container" style="border-color: {{ $accentColor }};">
-                                <img src="data:image/png;base64, {!! base64_encode(QrCode::format('png')->size(180)->generate((string)$attendee->getPublicId())) !!} " />
+                                <img src="data:image/svg+xml;base64,{!! base64_encode(QrCode::format('svg')->size(180)->generate((string)$attendee->getPublicId())) !!}" />
                             </div>
                         @endif
 
