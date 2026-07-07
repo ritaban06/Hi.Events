@@ -128,7 +128,7 @@ class AttendeeTicketMail extends BaseMail
             $pdfService = app(GenerateTicketPdfService::class);
             $pdf = $pdfService->generate($this->attendees, $this->event);
             
-            $filename = $this->attendees->count() > 1 ? 'Tickets.pdf' : 'Ticket.pdf';
+            $filename = $this->attendees->count() > 1 ? 'tickets.pdf' : 'ticket.pdf';
             $pdfOutput = $pdf->output();
             
             $attachments[] = Attachment::fromData(static fn() => $pdfOutput, $filename)
