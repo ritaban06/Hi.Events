@@ -9,6 +9,7 @@ use HiEvents\DomainObjects\OrderDomainObject;
 use HiEvents\DomainObjects\OrganizerDomainObject;
 use HiEvents\Services\Domain\Email\MailBuilderService;
 use Illuminate\Contracts\Mail\Mailer;
+use Illuminate\Support\Collection;
 
 class SendAttendeeTicketService
 {
@@ -21,23 +22,25 @@ class SendAttendeeTicketService
 
     public function send(
         OrderDomainObject        $order,
-        AttendeeDomainObject     $attendee,
+        Collection               $attendees,
         EventDomainObject        $event,
         EventSettingDomainObject $eventSettings,
         OrganizerDomainObject    $organizer,
     ): void
     {
         $mail = $this->mailBuilderService->buildAttendeeTicketMail(
-            $attendee,
+            $attendees,
             $order,
             $event,
             $eventSettings,
             $organizer
         );
 
+        $firstAttendee = $attendees->first();
+
         $this->mailer
-            ->to($attendee->getEmail())
-            ->locale($attendee->getLocale())
+            ->to($firstAttendee->getEmail())
+            ->locale($firstAttendee->getLocale())
             ->send($mail);
     }
 }

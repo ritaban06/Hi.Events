@@ -26,6 +26,7 @@
         "php-open-source-saver/jwt-auth": "^2.1",
         "razorpay/razorpay": "2.9",
         "sentry/sentry-laravel": "^4.13",
+        "simplesoftwareio/simple-qrcode": "*",
         "spatie/icalendar-generator": "^3.0",
         "spatie/laravel-data": "^4.15",
         "spatie/laravel-webhook-server": "^3.8",

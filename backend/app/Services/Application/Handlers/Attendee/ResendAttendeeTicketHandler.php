@@ -56,7 +56,7 @@ readonly class ResendAttendeeTicketHandler
 
         $this->sendAttendeeProductService->send(
             order: $attendee->getOrder(),
-            attendee: $attendee,
+            attendees: collect([$attendee]),
             event: $event,
             eventSettings: $event->getEventSettings(),
             organizer: $event->getOrganizer(),

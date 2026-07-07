@@ -18,6 +18,10 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Support\Str;
 use Spatie\IcalendarGenerator\Components\Calendar;
 use Spatie\IcalendarGenerator\Components\Event;
+use Illuminate\Support\Facades\Log;
+
+use HiEvents\Services\Domain\Attendee\GenerateTicketPdfService;
+use Illuminate\Support\Collection;
 
 /**
  * @uses /backend/resources/views/emails/orders/attendee-ticket.blade.php
@@ -25,10 +29,14 @@ use Spatie\IcalendarGenerator\Components\Event;
 class AttendeeTicketMail extends BaseMail
 {
     private readonly ?RenderedEmailTemplateDTO $renderedTemplate;
+    private readonly AttendeeDomainObject $firstAttendee;
 
+    /**
+     * @param Collection<AttendeeDomainObject> $attendees
+     */
     public function __construct(
         private readonly OrderDomainObject        $order,
-        private readonly AttendeeDomainObject     $attendee,
+        private readonly Collection               $attendees,
         private readonly EventDomainObject        $event,
         private readonly EventSettingDomainObject $eventSettings,
         private readonly OrganizerDomainObject    $organizer,
@@ -37,6 +45,7 @@ class AttendeeTicketMail extends BaseMail
     {
         parent::__construct();
         $this->renderedTemplate = $renderedTemplate;
+        $this->firstAttendee = $this->attendees->first();
     }
 
     public function envelope(): Envelope
@@ -69,14 +78,14 @@ class AttendeeTicketMail extends BaseMail
             markdown: 'emails.orders.attendee-ticket',
             with: [
                 'event' => $this->event,
-                'attendee' => $this->attendee,
+                'attendee' => $this->firstAttendee,
                 'eventSettings' => $this->eventSettings,
                 'organizer' => $this->organizer,
                 'order' => $this->order,
                 'ticketUrl' => sprintf(
                     Url::getFrontEndUrlFromConfig(Url::ATTENDEE_TICKET),
                     $this->event->getId(),
-                    $this->attendee->getShortId(),
+                    $this->firstAttendee->getShortId(),
                 )
             ]
         );
@@ -89,7 +98,7 @@ class AttendeeTicketMail extends BaseMail
 
         $event = Event::create()
             ->name($this->event->getTitle())
-            ->uniqueIdentifier('event-' . $this->attendee->getId())
+            ->uniqueIdentifier('event-' . $this->firstAttendee->getId())
             ->startsAt($startDateTime)
             ->url($this->event->getEventUrl())
             ->organizer($this->organizer->getEmail(), $this->organizer->getName());
@@ -110,9 +119,27 @@ class AttendeeTicketMail extends BaseMail
             ->event($event)
             ->get();
 
-        return [
+        $attachments = [
             Attachment::fromData(static fn() => $calendar, 'event.ics')
                 ->withMime('text/calendar')
         ];
+
+        try {
+            $pdfService = app(GenerateTicketPdfService::class);
+            $pdf = $pdfService->generate($this->attendees, $this->event);
+            
+            $filename = $this->attendees->count() > 1 ? 'Tickets.pdf' : 'Ticket.pdf';
+            $pdfOutput = $pdf->output();
+            
+            $attachments[] = Attachment::fromData(static fn() => $pdfOutput, $filename)
+                ->withMime('application/pdf');
+        } catch (\Throwable $e) {
+            Log::error('Failed to generate ticket PDF for email', [
+                'order_id' => $this->order->getId(),
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $attachments;
     }
 }
