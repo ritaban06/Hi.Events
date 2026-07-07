@@ -4,6 +4,7 @@ use HiEvents\Helper\Currency;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Str;
 use HiEvents\Helper\Url;
+use Illuminate\Support\Facades\Storage;
 
 /** @var \HiEvents\DomainObjects\EventDomainObject $event */
 /** @var \HiEvents\DomainObjects\EventSettingDomainObject $eventSettings */
@@ -14,13 +15,28 @@ $accentColor = $ticketDesignSettings['accent_color'] ?? '#6B46C1';
 $footerText = $ticketDesignSettings['footer_text'] ?? null;
 $dateDisplayMode = $ticketDesignSettings['date_display_mode'] ?? 'START_DATE_TIME';
 
-$eventCoverUrl = null;
+$eventCoverBase64 = null;
+$eventCoverMime = null;
 if ($event->getImages()) {
+    $bannerImage = null;
     foreach ($event->getImages() as $image) {
         if ($image->getType() === 'EVENT_COVER') {
-            $eventCoverUrl = Url::getCdnUrl($image->getPath());
-        } elseif ($image->getType() === 'TICKET_LOGO' && !$eventCoverUrl) {
-            $eventCoverUrl = Url::getCdnUrl($image->getPath());
+            $bannerImage = $image;
+            break;
+        } elseif ($image->getType() === 'TICKET_LOGO' && !$bannerImage) {
+            $bannerImage = $image;
+        }
+    }
+    
+    if ($bannerImage) {
+        try {
+            $disk = Storage::disk($bannerImage->getDisk());
+            if ($disk->exists($bannerImage->getPath())) {
+                $eventCoverBase64 = base64_encode($disk->get($bannerImage->getPath()));
+                $eventCoverMime = $bannerImage->getMimeType() ?: 'image/jpeg';
+            }
+        } catch (\Throwable $e) {
+            // Silently fail if image cannot be loaded
         }
     }
 }
@@ -311,8 +327,8 @@ if ($event->getImages()) {
                 </div>
 
                 <div class="content-right">
-                    @if($eventCoverUrl)
-                        <img src="{{ $eventCoverUrl }}" class="event-banner" alt="Event Banner" />
+                    @if($eventCoverBase64)
+                        <img src="data:{{ $eventCoverMime }};base64,{{ $eventCoverBase64 }}" class="event-banner" alt="Event Banner" />
                     @endif
                     
                     <div class="qr-section">
