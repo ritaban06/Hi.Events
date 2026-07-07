@@ -40,7 +40,6 @@ class GetPublicEventHandler
                         nested: [
                             new Relationship(ProductPriceDomainObject::class),
                             new Relationship(TaxAndFeesDomainObject::class),
-                            new Relationship(ImageDomainObject::class),
                         ],
                         orderAndDirections: [
                             new OrderAndDirection('order', 'asc'),

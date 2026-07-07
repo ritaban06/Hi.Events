@@ -38,7 +38,6 @@ class GetEventAction extends BaseAction
                     new Relationship(ProductDomainObject::class, [
                         new Relationship(ProductPriceDomainObject::class),
                         new Relationship(TaxAndFeesDomainObject::class),
-                        new Relationship(ImageDomainObject::class),
                     ]),
                 ])
             )

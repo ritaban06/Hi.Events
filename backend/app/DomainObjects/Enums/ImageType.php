@@ -21,9 +21,6 @@ enum ImageType
     case ORGANIZER_LOGO;
     case ORGANIZER_COVER;
 
-    // Product images
-    case PRODUCT_IMAGE;
-
     public static function eventImageTypes(): array
     {
         return [
@@ -37,13 +34,6 @@ enum ImageType
         return [
             self::ORGANIZER_LOGO,
             self::ORGANIZER_COVER,
-        ];
-    }
-
-    public static function productImageTypes(): array
-    {
-        return [
-            self::PRODUCT_IMAGE,
         ];
     }
 
@@ -62,7 +52,6 @@ enum ImageType
             self::TICKET_LOGO->name => [100, 100],
             self::ORGANIZER_LOGO->name => [100, 100],
             self::ORGANIZER_COVER->name => [600, 50],
-            self::PRODUCT_IMAGE->name => [600, 400],
         ];
 
         return $map[$imageType->name] ?? $map[self::GENERIC->name];
@@ -76,10 +65,6 @@ enum ImageType
 
         if (in_array($this, self::organizerImageTypes())) {
             return OrganizerDomainObject::class;
-        }
-
-        if (in_array($this, self::productImageTypes())) {
-            return \HiEvents\DomainObjects\ProductDomainObject::class;
         }
 
         if (in_array($this, self::genericImageTypes())) {

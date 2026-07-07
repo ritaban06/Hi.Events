@@ -8,7 +8,6 @@ use HiEvents\DomainObjects\Generated\ProductDomainObjectAbstract;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends BaseModel
@@ -51,10 +50,5 @@ class Product extends BaseModel
     public function product_category(): BelongsTo
     {
         return $this->belongsTo(ProductCategory::class);
-    }
-
-    public function images(): MorphMany
-    {
-        return $this->morphMany(Image::class, 'entity');
     }
 }

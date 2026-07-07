@@ -20,8 +20,6 @@ class ProductDomainObject extends Generated\ProductDomainObjectAbstract implemen
 
     private ?int $quantityAvailable = null;
 
-    private ?Collection $images = null;
-
     public static function getDefaultSort(): string
     {
         return self::ORDER;
@@ -223,17 +221,5 @@ class ProductDomainObject extends Generated\ProductDomainObjectAbstract implemen
     public function getOffSaleReason(): ?string
     {
         return $this->offSaleReason;
-    }
-
-    public function getImages(): ?Collection
-    {
-        return $this->images;
-    }
-
-    public function setImages(?Collection $images): self
-    {
-        $this->images = $images;
-
-        return $this;
     }
 }
