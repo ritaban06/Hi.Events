@@ -449,7 +449,8 @@ const SelectProducts = (props: SelectProductsProps) => {
                                                             width: '100%',
                                                             height: '160px',
                                                             backgroundImage: `url(${coverImage})`,
-                                                            backgroundSize: 'cover',
+                                                            backgroundSize: 'contain',
+                                                            backgroundRepeat: 'no-repeat',
                                                             backgroundPosition: 'center',
                                                             borderBottom: '1px solid var(--widget-primary-color, var(--hi-secondary))'
                                                         }} />
