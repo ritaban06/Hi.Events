@@ -438,7 +438,7 @@ const SelectProducts = (props: SelectProductsProps) => {
                                                 .map((n) => n.toString());
                                             quantityRange.unshift("0");
 
-                                            const coverImageData = eventCoverImage(event);
+                                            const coverImageData = event.images?.find(img => img.type === 'EVENT_COVER');
                                             const coverImage = coverImageData?.url;
 
                                             return (
