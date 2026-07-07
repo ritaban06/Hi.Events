@@ -2,6 +2,7 @@
 
 namespace HiEvents\Services\Application\Handlers\Product;
 
+use HiEvents\DomainObjects\ImageDomainObject;
 use HiEvents\DomainObjects\ProductPriceDomainObject;
 use HiEvents\DomainObjects\TaxAndFeesDomainObject;
 use HiEvents\Http\DTO\QueryParamsDTO;
@@ -23,6 +24,7 @@ class GetProductsHandler
         $productPaginator = $this->productRepository
             ->loadRelation(ProductPriceDomainObject::class)
             ->loadRelation(TaxAndFeesDomainObject::class)
+            ->loadRelation(ImageDomainObject::class)
             ->findByEventId($eventId, $queryParamsDTO);
 
         $filteredProducts = $this->productFilterService->filter(

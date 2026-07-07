@@ -6,6 +6,7 @@ namespace HiEvents\Http\Actions\Products;
 
 use HiEvents\DomainObjects\EventDomainObject;
 use HiEvents\DomainObjects\Generated\ProductDomainObjectAbstract;
+use HiEvents\DomainObjects\ImageDomainObject;
 use HiEvents\DomainObjects\ProductPriceDomainObject;
 use HiEvents\DomainObjects\TaxAndFeesDomainObject;
 use HiEvents\Http\Actions\BaseAction;
@@ -30,6 +31,7 @@ class GetProductAction extends BaseAction
         $product = $this->productRepository
             ->loadRelation(TaxAndFeesDomainObject::class)
             ->loadRelation(ProductPriceDomainObject::class)
+            ->loadRelation(ImageDomainObject::class)
             ->findFirstWhere([
                 ProductDomainObjectAbstract::EVENT_ID => $eventId,
                 ProductDomainObjectAbstract::ID => $productId,
