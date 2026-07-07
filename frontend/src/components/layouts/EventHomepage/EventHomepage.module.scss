@@ -702,9 +702,9 @@ $transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   :global(.hi-product-rows) {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
     margin-bottom: 0;
   }
 
