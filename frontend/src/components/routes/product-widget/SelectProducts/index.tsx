@@ -445,15 +445,19 @@ const SelectProducts = (props: SelectProductsProps) => {
                                             return (
                                                 <div key={product.id} className={`hi-product-row ${product.is_highlighted ? 'hi-product-highlighted' : ''}`}>
                                                     {coverImage && (
-                                                        <div className={'hi-product-card-image'} style={{
-                                                            width: '100%',
-                                                            height: '160px',
-                                                            backgroundImage: `url(${coverImage})`,
-                                                            backgroundSize: 'contain',
-                                                            backgroundRepeat: 'no-repeat',
-                                                            backgroundPosition: 'center',
-                                                            borderBottom: '1px solid var(--widget-primary-color, var(--hi-secondary))'
-                                                        }} />
+                                                        <img
+                                                            src={coverImage}
+                                                            alt={product.title}
+                                                            className={'hi-product-card-image'}
+                                                            style={{
+                                                                width: '100%',
+                                                                height: 'auto',
+                                                                maxHeight: '400px',
+                                                                objectFit: 'contain',
+                                                                borderBottom: '1px solid var(--widget-primary-color, var(--hi-secondary))',
+                                                                display: 'block'
+                                                            }}
+                                                        />
                                                     )}
                                                     {product.is_highlighted && product.highlight_message && (
                                                         <div className={'hi-product-highlight-message'}>
