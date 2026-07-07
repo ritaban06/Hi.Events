@@ -34,7 +34,7 @@ readonly class ResendAttendeeTicketHandler
     public function handle(ResendAttendeeTicketDTO $resendAttendeeProductDTO): void
     {
         $attendee = $this->attendeeRepository
-            ->loadRelation(ProductDomainObject::class)
+            ->loadRelation(new Relationship(ProductDomainObject::class, name: 'product'))
             ->loadRelation(new Relationship(OrderDomainObject::class, nested: [
                 new Relationship(OrderItemDomainObject::class),
             ], name: 'order'))

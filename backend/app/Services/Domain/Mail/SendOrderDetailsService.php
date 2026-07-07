@@ -37,7 +37,7 @@ class SendOrderDetailsService
         $order = $this->orderRepository
             ->loadRelation(OrderItemDomainObject::class)
             ->loadRelation(new Relationship(AttendeeDomainObject::class, nested: [
-                new Relationship(ProductDomainObject::class)
+                new Relationship(ProductDomainObject::class, name: 'product')
             ]))
             ->loadRelation(InvoiceDomainObject::class)
             ->findById($order->getId());
