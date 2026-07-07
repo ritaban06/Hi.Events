@@ -12,16 +12,12 @@ use HiEvents\DomainObjects\OrganizerDomainObject;
 use HiEvents\Mail\Attendee\AttendeeTicketMail;
 use HiEvents\Mail\Order\OrderSummary;
 use HiEvents\Services\Domain\Email\DTO\RenderedEmailTemplateDTO;
-use HiEvents\Services\Domain\Ticket\GenerateOrderTicketsPdfService;
-use Psr\Log\LoggerInterface;
 
 class MailBuilderService
 {
     public function __construct(
         private readonly EmailTemplateService $emailTemplateService,
         private readonly EmailTokenContextBuilder $tokenContextBuilder,
-        private readonly GenerateOrderTicketsPdfService $generateOrderTicketsPdfService,
-        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -47,8 +43,6 @@ class MailBuilderService
             eventSettings: $eventSettings,
             organizer: $organizer,
             renderedTemplate: $renderedTemplate,
-            generateOrderTicketsPdfService: $this->generateOrderTicketsPdfService,
-            logger: $this->logger,
         );
     }
 
@@ -73,8 +67,6 @@ class MailBuilderService
             eventSettings: $eventSettings,
             invoice: $invoice,
             renderedTemplate: $renderedTemplate,
-            generateOrderTicketsPdfService: $this->generateOrderTicketsPdfService,
-            logger: $this->logger,
         );
     }
 
