@@ -27,7 +27,7 @@ use HiEvents\Repository\Interfaces\AttendeeRepositoryInterface;
 use HiEvents\Repository\Interfaces\EventRepositoryInterface;
 use HiEvents\Repository\Interfaces\InvoiceRepositoryInterface;
 use HiEvents\Repository\Interfaces\OrderRepositoryInterface;
-use HiEvents\Services\Domain\Mail\SendOrderDetailsService;
+
 use HiEvents\Services\Infrastructure\DomainEvents\DomainEventDispatcherService;
 use HiEvents\Services\Infrastructure\DomainEvents\Enums\DomainEventType;
 use HiEvents\Services\Infrastructure\DomainEvents\Events\OrderEvent;
@@ -46,7 +46,6 @@ class MarkOrderAsPaidService
         private readonly OrderApplicationFeeCalculationService $orderApplicationFeeCalculationService,
         private readonly EventRepositoryInterface              $eventRepository,
         private readonly OrderApplicationFeeService            $orderApplicationFeeService,
-        private readonly SendOrderDetailsService               $sendOrderDetailsService,
     )
     {
     }
@@ -99,7 +98,7 @@ class MarkOrderAsPaidService
 
             event(new OrderStatusChangedEvent(
                 order: $updatedOrder,
-                sendEmails: false
+                sendEmails: true
             ));
 
             $this->domainEventDispatcherService->dispatch(
@@ -110,14 +109,6 @@ class MarkOrderAsPaidService
             );
 
             $this->storeApplicationFeePayment($updatedOrder);
-
-            $this->sendOrderDetailsService->sendCustomerOrderSummary(
-                order: $updatedOrder,
-                event: $event,
-                organizer: $event->getOrganizer(),
-                eventSettings: $event->getEventSettings(),
-                invoice: $order->getLatestInvoice(),
-            );
 
             return $updatedOrder;
         });
