@@ -12,8 +12,8 @@
   }
 
   .hi-product-rows {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
     margin-bottom: 20px;
 
@@ -21,9 +21,15 @@
       display: flex;
       flex-flow: column;
       border: 3px solid var(--widget-primary-color, var(--hi-secondary));
-      border-radius: 5px;
+      border-radius: 12px;
       position: relative;
       overflow: hidden;
+      background: var(--widget-background-color, var(--hi-color-white));
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+      &:hover {
+        transform: translateY(-2px);
+      }
 
       &.hi-product-highlighted {
         border-color: var(--widget-secondary-color, var(--hi-primary));

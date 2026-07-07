@@ -3,13 +3,11 @@ import {
     ActionIcon,
     Anchor,
     Button,
-    Collapse,
     Group,
     Input,
     Modal,
     Spoiler,
-    TextInput,
-    UnstyledButton
+    TextInput
 } from "@mantine/core";
 import {useNavigate, useParams} from "react-router";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
@@ -33,7 +31,7 @@ import {PoweredByFooter} from "../../../common/PoweredByFooter";
 import {Event, Product} from "../../../../types.ts";
 import {eventsClientPublic} from "../../../../api/event.client.ts";
 import {promoCodeClientPublic} from "../../../../api/promo-code.client.ts";
-import {IconChevronRight, IconX} from "@tabler/icons-react"
+import {IconX} from "@tabler/icons-react"
 import {getSessionIdentifier} from "../../../../utilites/sessionIdentifier.ts";
 import {Constants} from "../../../../constants.ts";
 import {clearWaitlistJoinedForEvent} from "../../../../hooks/useWaitlistJoined.ts";
@@ -88,7 +86,6 @@ const SelectProducts = (props: SelectProductsProps) => {
     const [event, setEvent] = useState(props.event);
     const [orderInProcessOverlayVisible, setOrderInProcessOverlayVisible] = useState(false);
     const [resizeRef, resizeObserverRect] = useResizeObserver();
-    const [collapsedProducts, setCollapsedProducts] = useState<{ [key: number]: boolean }>({});
     const [affiliateCode, setAffiliateCode] = useState<string | null>(null);
 
     useEffect(() => sendHeightToIframeWidgets(), [resizeObserverRect.height]);
@@ -441,26 +438,28 @@ const SelectProducts = (props: SelectProductsProps) => {
                                                 .map((n) => n.toString());
                                             quantityRange.unshift("0");
 
-                                            const isProductCollapsed = collapsedProducts[Number(product.id)] ?? product.start_collapsed;
-                                            const toggleCollapse = () => {
-                                                setCollapsedProducts(prev => ({
-                                                    ...prev,
-                                                    [Number(product.id)]: !isProductCollapsed
-                                                }));
-                                            };
+                                            const coverImageData = eventCoverImage(event);
+                                            const coverImage = coverImageData?.url;
 
                                             return (
                                                 <div key={product.id} className={`hi-product-row ${product.is_highlighted ? 'hi-product-highlighted' : ''}`}>
+                                                    {coverImage && (
+                                                        <div className={'hi-product-card-image'} style={{
+                                                            width: '100%',
+                                                            height: '160px',
+                                                            backgroundImage: `url(${coverImage})`,
+                                                            backgroundSize: 'cover',
+                                                            backgroundPosition: 'center',
+                                                            borderBottom: '1px solid var(--widget-primary-color, var(--hi-secondary))'
+                                                        }} />
+                                                    )}
                                                     {product.is_highlighted && product.highlight_message && (
                                                         <div className={'hi-product-highlight-message'}>
                                                             {product.highlight_message}
                                                         </div>
                                                     )}
                                                     <div className={'hi-title-row'}>
-                                                        <UnstyledButton variant={'transparent'}
-                                                                        className={'hi-product-title'}
-                                                                        onClick={toggleCollapse}
-                                                        >
+                                                        <div className={'hi-product-title'}>
                                                             <h3>
                                                                 {product.title}
                                                             </h3>
@@ -485,15 +484,10 @@ const SelectProducts = (props: SelectProductsProps) => {
                                                                                                 event={event}/>
                                                                 )}
 
-                                                                <span className={`hi-product-collapse-arrow`}>
-                                                                <IconChevronRight
-                                                                    className={isProductCollapsed ? "" : "open"}/>
-                                                                </span>
                                                             </div>
-                                                        </UnstyledButton>
+                                                        </div>
                                                     </div>
-                                                    <Collapse transitionDuration={100} in={!isProductCollapsed}
-                                                              className={'hi-product-content'} hidden={isProductCollapsed}>
+                                                    <div className={'hi-product-content'}>
                                                         <div className={'hi-price-tiers-rows'}>
                                                             <TieredPricing
                                                                 productIndex={productIndex++}
@@ -528,7 +522,7 @@ const SelectProducts = (props: SelectProductsProps) => {
                                                                 </Spoiler>
                                                             </div>
                                                         )}
-                                                    </Collapse>
+                                                    </div>
                                                 </div>
                                             )
                                         })}
