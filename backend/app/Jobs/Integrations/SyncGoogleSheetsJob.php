@@ -82,7 +82,7 @@ class SyncGoogleSheetsJob implements ShouldQueue
                 $order->currency,
                 $order->status,
                 $order->payment_status,
-                $order->created_at ? $order->created_at->toDateTimeString() : '',
+                $order->created_at ? (is_string($order->created_at) ? $order->created_at : $order->created_at->toDateTimeString()) : '',
             ];
         }
 
@@ -106,8 +106,8 @@ class SyncGoogleSheetsJob implements ShouldQueue
                 $attendee->last_name,
                 $attendee->email,
                 $attendee->status,
-                $attendee->checked_in_at ? $attendee->checked_in_at->toDateTimeString() : '',
-                $attendee->created_at ? $attendee->created_at->toDateTimeString() : '',
+                $attendee->checked_in_at ? (is_string($attendee->checked_in_at) ? $attendee->checked_in_at : $attendee->checked_in_at->toDateTimeString()) : '',
+                $attendee->created_at ? (is_string($attendee->created_at) ? $attendee->created_at : $attendee->created_at->toDateTimeString()) : '',
             ];
         }
 
@@ -130,7 +130,7 @@ class SyncGoogleSheetsJob implements ShouldQueue
                 $checkIn->attendee_id,
                 $checkIn->attendee ? trim($checkIn->attendee->first_name . ' ' . $checkIn->attendee->last_name) : '',
                 $checkIn->attendee ? $checkIn->attendee->email : '',
-                $checkIn->created_at ? $checkIn->created_at->toDateTimeString() : '',
+                $checkIn->created_at ? (is_string($checkIn->created_at) ? $checkIn->created_at : $checkIn->created_at->toDateTimeString()) : '',
             ];
         }
 
