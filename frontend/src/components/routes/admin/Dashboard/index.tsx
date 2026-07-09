@@ -10,7 +10,6 @@ import {
     IconEye,
     IconCurrencyDollar,
     IconShoppingCart,
-    IconShoppingCart,
     IconUserPlus,
     IconCloudUpload
 } from "@tabler/icons-react";
