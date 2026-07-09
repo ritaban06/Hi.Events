@@ -2,6 +2,7 @@
 
 namespace HiEvents\Http\Actions\Events\GoogleSheets;
 
+use HiEvents\DomainObjects\EventDomainObject;
 use HiEvents\DomainObjects\Enums\Role;
 use HiEvents\Http\Actions\BaseAction;
 use HiEvents\Jobs\Integrations\SyncGoogleSheetsJob;
@@ -11,8 +12,7 @@ class SyncGoogleSheetsAction extends BaseAction
 {
     public function __invoke(int $eventId): JsonResponse
     {
-        $this->minimumAllowedRole(Role::ORGANIZER)
-            ->authorizeEventAccess($eventId);
+        $this->isActionAuthorized($eventId, EventDomainObject::class);
 
         SyncGoogleSheetsJob::dispatch($eventId);
 
