@@ -15,6 +15,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class SyncGoogleSheetsJob implements ShouldQueue
 {
@@ -83,11 +84,17 @@ class SyncGoogleSheetsJob implements ShouldQueue
                 $order->currency ?? '',
                 $order->status ?? '',
                 $order->payment_status ?? '',
-                $order->created_at ? (is_string($order->created_at) ? $order->created_at : $order->created_at->toDateTimeString()) : '',
+                $this->formatIstDate($order->created_at),
             ];
         }
 
         $this->updateSheet($service, $spreadsheetId, 'Orders', $data);
+
+        $this->applyConditionalFormatting($service, $spreadsheetId, 'Orders', [
+            'ABANDONED' => [0.5, 0.0, 0.5], // Purple
+            'AWAITING_OFFLINE_PAYMENT' => [0.6, 0.4, 0.2], // Brown
+            'COMPLETED' => [0.2, 0.6, 0.3], // Green
+        ], 9);
     }
 
     private function syncAttendees(Google_Service_Sheets $service, string $spreadsheetId, int $eventId): void
@@ -108,12 +115,18 @@ class SyncGoogleSheetsJob implements ShouldQueue
                 $attendee->last_name ?? '',
                 $attendee->email ?? '',
                 $attendee->status ?? '',
-                $attendee->checked_in_at ? (is_string($attendee->checked_in_at) ? $attendee->checked_in_at : $attendee->checked_in_at->toDateTimeString()) : '',
-                $attendee->created_at ? (is_string($attendee->created_at) ? $attendee->created_at : $attendee->created_at->toDateTimeString()) : '',
+                $this->formatIstDate($attendee->checked_in_at),
+                $this->formatIstDate($attendee->created_at),
             ];
         }
 
         $this->updateSheet($service, $spreadsheetId, 'Attendees', $data);
+
+        $this->applyConditionalFormatting($service, $spreadsheetId, 'Attendees', [
+            'AWAITING_PAYMENT' => [0.8, 0.2, 0.2], // Red
+            'ACTIVE' => [0.2, 0.6, 0.3], // Green
+            'CANCELLED' => [0.8, 0.2, 0.2], // Red
+        ], 8);
     }
 
     private function syncCheckIns(Google_Service_Sheets $service, string $spreadsheetId, int $eventId): void
@@ -133,11 +146,34 @@ class SyncGoogleSheetsJob implements ShouldQueue
                 ($checkIn->attendee && $checkIn->attendee->product) ? $checkIn->attendee->product->title : '',
                 $checkIn->attendee ? trim(($checkIn->attendee->first_name ?? '') . ' ' . ($checkIn->attendee->last_name ?? '')) : '',
                 $checkIn->attendee ? ($checkIn->attendee->email ?? '') : '',
-                $checkIn->created_at ? (is_string($checkIn->created_at) ? $checkIn->created_at : $checkIn->created_at->toDateTimeString()) : '',
+                $this->formatIstDate($checkIn->created_at),
             ];
         }
 
         $this->updateSheet($service, $spreadsheetId, 'Check-ins', $data);
+    }
+
+    private function formatIstDate($date): string
+    {
+        if (!$date) {
+            return '';
+        }
+
+        try {
+            if (is_string($date)) {
+                $date = Carbon::parse($date);
+            }
+
+            if ($date instanceof \DateTimeInterface) {
+                return Carbon::instance($date)
+                    ->setTimezone('Asia/Kolkata')
+                    ->format('d/m/Y h:i A');
+            }
+        } catch (\Throwable $e) {
+            // Ignore parse errors and fallback
+        }
+
+        return is_string($date) ? $date : '';
     }
 
     private function updateSheet(Google_Service_Sheets $service, string $spreadsheetId, string $sheetName, array $data): void
@@ -178,5 +214,93 @@ class SyncGoogleSheetsJob implements ShouldQueue
         ];
 
         $service->spreadsheets_values->append($spreadsheetId, $sheetName, $body, $params);
+    }
+
+    private function applyConditionalFormatting(Google_Service_Sheets $service, string $spreadsheetId, string $sheetName, array $rules, int $columnIndex): void
+    {
+        $spreadsheet = $service->spreadsheets->get($spreadsheetId);
+        $sheet = null;
+        foreach ($spreadsheet->getSheets() as $s) {
+            if ($s->getProperties()->getTitle() === $sheetName) {
+                $sheet = $s;
+                break;
+            }
+        }
+        
+        if (!$sheet) {
+            return;
+        }
+
+        $sheetId = $sheet->getProperties()->getSheetId();
+        $requests = [];
+
+        // Remove existing conditional formats for this column to avoid duplicates
+        $formats = $sheet->getConditionalFormats();
+        if ($formats) {
+            for ($i = count($formats) - 1; $i >= 0; $i--) {
+                $rule = $formats[$i];
+                $ranges = $rule->getRanges();
+                foreach ($ranges as $range) {
+                    if ($range->getStartColumnIndex() === $columnIndex && $range->getEndColumnIndex() === ($columnIndex + 1)) {
+                        $requests[] = new \Google_Service_Sheets_Request([
+                            'deleteConditionalFormatRule' => [
+                                'sheetId' => $sheetId,
+                                'index' => $i
+                            ]
+                        ]);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Add new rules
+        foreach ($rules as $value => $color) {
+            $requests[] = new \Google_Service_Sheets_Request([
+                'addConditionalFormatRule' => [
+                    'rule' => [
+                        'ranges' => [
+                            [
+                                'sheetId' => $sheetId,
+                                'startRowIndex' => 1,
+                                'startColumnIndex' => $columnIndex,
+                                'endColumnIndex' => $columnIndex + 1
+                            ]
+                        ],
+                        'booleanRule' => [
+                            'condition' => [
+                                'type' => 'TEXT_EQ',
+                                'values' => [
+                                    ['userEnteredValue' => $value]
+                                ]
+                            ],
+                            'format' => [
+                                'backgroundColor' => [
+                                    'red' => $color[0],
+                                    'green' => $color[1],
+                                    'blue' => $color[2]
+                                ],
+                                'textFormat' => [
+                                    'foregroundColor' => [
+                                        'red' => 1,
+                                        'green' => 1,
+                                        'blue' => 1
+                                    ],
+                                    'bold' => true
+                                ]
+                            ]
+                        ]
+                    ],
+                    'index' => 0
+                ]
+            ]);
+        }
+
+        if (!empty($requests)) {
+            $body = new \Google_Service_Sheets_BatchUpdateSpreadsheetRequest([
+                'requests' => $requests
+            ]);
+            $service->spreadsheets->batchUpdate($spreadsheetId, $body);
+        }
     }
 }
