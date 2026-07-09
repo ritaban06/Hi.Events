@@ -72,16 +72,16 @@ class SyncGoogleSheetsJob implements ShouldQueue
 
         foreach ($orders as $order) {
             $data[] = [
-                $order->id,
-                $order->short_id,
-                $order->event_id,
-                $order->first_name,
-                $order->last_name,
-                $order->email,
-                $order->total_gross,
-                $order->currency,
-                $order->status,
-                $order->payment_status,
+                $order->id ?? '',
+                $order->short_id ?? '',
+                $order->event_id ?? '',
+                $order->first_name ?? '',
+                $order->last_name ?? '',
+                $order->email ?? '',
+                $order->total_gross ?? '',
+                $order->currency ?? '',
+                $order->status ?? '',
+                $order->payment_status ?? '',
                 $order->created_at ? (is_string($order->created_at) ? $order->created_at : $order->created_at->toDateTimeString()) : '',
             ];
         }
@@ -98,14 +98,14 @@ class SyncGoogleSheetsJob implements ShouldQueue
 
         foreach ($attendees as $attendee) {
             $data[] = [
-                $attendee->id,
-                $attendee->short_id,
-                $attendee->order_id,
-                $attendee->event_id,
-                $attendee->first_name,
-                $attendee->last_name,
-                $attendee->email,
-                $attendee->status,
+                $attendee->id ?? '',
+                $attendee->short_id ?? '',
+                $attendee->order_id ?? '',
+                $attendee->event_id ?? '',
+                $attendee->first_name ?? '',
+                $attendee->last_name ?? '',
+                $attendee->email ?? '',
+                $attendee->status ?? '',
                 $attendee->checked_in_at ? (is_string($attendee->checked_in_at) ? $attendee->checked_in_at : $attendee->checked_in_at->toDateTimeString()) : '',
                 $attendee->created_at ? (is_string($attendee->created_at) ? $attendee->created_at : $attendee->created_at->toDateTimeString()) : '',
             ];
@@ -125,11 +125,11 @@ class SyncGoogleSheetsJob implements ShouldQueue
 
         foreach ($checkIns as $checkIn) {
             $data[] = [
-                $checkIn->id,
-                $checkIn->check_in_list_id,
-                $checkIn->attendee_id,
-                $checkIn->attendee ? trim($checkIn->attendee->first_name . ' ' . $checkIn->attendee->last_name) : '',
-                $checkIn->attendee ? $checkIn->attendee->email : '',
+                $checkIn->id ?? '',
+                $checkIn->check_in_list_id ?? '',
+                $checkIn->attendee_id ?? '',
+                $checkIn->attendee ? trim(($checkIn->attendee->first_name ?? '') . ' ' . ($checkIn->attendee->last_name ?? '')) : '',
+                $checkIn->attendee ? ($checkIn->attendee->email ?? '') : '',
                 $checkIn->created_at ? (is_string($checkIn->created_at) ? $checkIn->created_at : $checkIn->created_at->toDateTimeString()) : '',
             ];
         }
