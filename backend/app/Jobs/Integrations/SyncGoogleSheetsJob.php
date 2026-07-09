@@ -65,9 +65,9 @@ class SyncGoogleSheetsJob implements ShouldQueue
     private function syncOrders(Google_Service_Sheets $service, string $spreadsheetId, int $eventId): void
     {
         // For large datasets, it's better to chunk, but we'll use get() for simplicity unless it fails
-        $orders = Order::where('event_id', $eventId)->get();
+        $orders = Order::with('order_items.product')->where('event_id', $eventId)->get();
         $data = [
-            ['ID', 'Short ID', 'Event ID', 'First Name', 'Last Name', 'Email', 'Total Gross', 'Currency', 'Status', 'Payment Status', 'Created At']
+            ['ID', 'Short ID', 'Event ID', 'First Name', 'Last Name', 'Email', 'Products', 'Total Gross', 'Currency', 'Status', 'Payment Status', 'Created At']
         ];
 
         foreach ($orders as $order) {
@@ -78,6 +78,7 @@ class SyncGoogleSheetsJob implements ShouldQueue
                 $order->first_name ?? '',
                 $order->last_name ?? '',
                 $order->email ?? '',
+                $order->order_items->map(fn($item) => $item->product ? $item->product->title : '')->filter()->unique()->implode(', '),
                 $order->total_gross ?? '',
                 $order->currency ?? '',
                 $order->status ?? '',
@@ -91,9 +92,9 @@ class SyncGoogleSheetsJob implements ShouldQueue
 
     private function syncAttendees(Google_Service_Sheets $service, string $spreadsheetId, int $eventId): void
     {
-        $attendees = Attendee::where('event_id', $eventId)->get();
+        $attendees = Attendee::with('product')->where('event_id', $eventId)->get();
         $data = [
-            ['ID', 'Short ID', 'Order ID', 'Event ID', 'First Name', 'Last Name', 'Email', 'Status', 'Checked In At', 'Created At']
+            ['ID', 'Short ID', 'Order ID', 'Event ID', 'Product', 'First Name', 'Last Name', 'Email', 'Status', 'Checked In At', 'Created At']
         ];
 
         foreach ($attendees as $attendee) {
@@ -102,6 +103,7 @@ class SyncGoogleSheetsJob implements ShouldQueue
                 $attendee->short_id ?? '',
                 $attendee->order_id ?? '',
                 $attendee->event_id ?? '',
+                $attendee->product ? $attendee->product->title : '',
                 $attendee->first_name ?? '',
                 $attendee->last_name ?? '',
                 $attendee->email ?? '',
@@ -118,9 +120,9 @@ class SyncGoogleSheetsJob implements ShouldQueue
     {
         $checkIns = AttendeeCheckIn::whereHas('attendee', function ($query) use ($eventId) {
             $query->where('event_id', $eventId);
-        })->with('attendee')->get();
+        })->with('attendee.product')->get();
         $data = [
-            ['ID', 'Check In List ID', 'Attendee ID', 'Attendee Name', 'Attendee Email', 'Created At']
+            ['ID', 'Check In List ID', 'Attendee ID', 'Product', 'Attendee Name', 'Attendee Email', 'Created At']
         ];
 
         foreach ($checkIns as $checkIn) {
@@ -128,6 +130,7 @@ class SyncGoogleSheetsJob implements ShouldQueue
                 $checkIn->id ?? '',
                 $checkIn->check_in_list_id ?? '',
                 $checkIn->attendee_id ?? '',
+                ($checkIn->attendee && $checkIn->attendee->product) ? $checkIn->attendee->product->title : '',
                 $checkIn->attendee ? trim(($checkIn->attendee->first_name ?? '') . ' ' . ($checkIn->attendee->last_name ?? '')) : '',
                 $checkIn->attendee ? ($checkIn->attendee->email ?? '') : '',
                 $checkIn->created_at ? (is_string($checkIn->created_at) ? $checkIn->created_at : $checkIn->created_at->toDateTimeString()) : '',
