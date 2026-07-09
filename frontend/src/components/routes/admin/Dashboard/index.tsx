@@ -10,8 +10,7 @@ import {
     IconEye,
     IconCurrencyDollar,
     IconShoppingCart,
-    IconUserPlus,
-    IconCloudUpload
+    IconUserPlus
 } from "@tabler/icons-react";
 import {useMutation} from "@tanstack/react-query";
 import {adminClient} from "../../../../api/admin.client";
@@ -35,16 +34,6 @@ const AdminDashboard = () => {
     const {data: stats, isLoading} = useGetAdminStats();
     const {data: upcomingEvents, isLoading: isLoadingEvents} = useGetUpcomingEvents(10);
     const {data: dashboardData, isLoading: isLoadingDashboard} = useGetAdminDashboardData({days: 14, limit: 10});
-
-    const syncMutation = useMutation({
-        mutationFn: () => adminClient.syncGoogleSheets(),
-        onSuccess: () => {
-            showSuccess(t`Google Sheets sync has been started in the background.`);
-        },
-        onError: () => {
-            showError(t`Failed to start Google Sheets sync.`);
-        }
-    });
 
     const formatEventDate = (dateString: string, eventTimezone?: string) => {
         const eventDate = dayjs.utc(dateString);
@@ -90,15 +79,6 @@ const AdminDashboard = () => {
                             </Text>
                         )}
                     </div>
-                    <Button 
-                        leftSection={<IconCloudUpload size={16} />} 
-                        onClick={() => syncMutation.mutate()}
-                        loading={syncMutation.isPending}
-                        variant="light"
-                        color="green"
-                    >
-                        <Trans>Sync Google Sheets</Trans>
-                    </Button>
                 </Group>
 
                 {/* Main Stats */}

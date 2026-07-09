@@ -567,10 +567,5 @@ export const adminClient = {
     getMessagingTiers: async (): Promise<GenericDataResponse<AccountMessagingTier[]>> => {
         const response = await api.get<GenericDataResponse<AccountMessagingTier[]>>('admin/messaging-tiers');
         return response.data;
-    },
-
-    syncGoogleSheets: async () => {
-        const response = await api.post('admin/integrations/google-sheets/sync');
-        return response.data;
-    },
+    }
 };

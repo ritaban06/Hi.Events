@@ -95,6 +95,11 @@ export const eventsClient = {
     getEventReport: async (eventId: IdParam, reportType: IdParam, startDate?: string, endDate?: string) => {
         const response = await api.get<GenericDataResponse<any>>('events/' + eventId + '/reports/' + reportType + '?start_date=' + startDate + '&end_date=' + endDate);
         return response.data;
+    },
+
+    syncGoogleSheets: async (eventId: IdParam) => {
+        const response = await api.post('events/' + eventId + '/integrations/google-sheets/sync');
+        return response.data;
     }
 }
 

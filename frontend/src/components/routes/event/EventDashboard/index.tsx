@@ -11,9 +11,11 @@ import classes from "./EventDashboard.module.scss";
 import {useGetEventStats} from "../../../../queries/useGetEventStats.ts";
 import {formatCurrency} from "../../../../utilites/currency.ts";
 import {formatDateWithLocale} from "../../../../utilites/dates.ts";
-import {Button, SegmentedControl, Skeleton, Tooltip} from "@mantine/core";
+import {Button, SegmentedControl, Skeleton, Tooltip, Group} from "@mantine/core";
 import {useMediaQuery} from "@mantine/hooks";
-import {IconAlertCircle, IconX} from "@tabler/icons-react";
+import {IconAlertCircle, IconX, IconCloudUpload} from "@tabler/icons-react";
+import {useMutation} from "@tanstack/react-query";
+import {eventsClient} from "../../../../api/event.client.ts";
 import {useGetAccount} from "../../../../queries/useGetAccount.ts";
 import {useUpdateEventStatus} from "../../../../mutations/useUpdateEventStatus.ts";
 import {confirmationDialog} from "../../../../utilites/confirmationDialog.tsx";
@@ -55,6 +57,16 @@ export const EventDashboard = () => {
 
     const [isChecklistVisible, setIsChecklistVisible] = useState(true);
     const [isMounted, setIsMounted] = useState(false);
+
+    const syncMutation = useMutation({
+        mutationFn: () => eventsClient.syncGoogleSheets(eventId as string),
+        onSuccess: () => {
+            showSuccess(t`Google Sheets sync has been started in the background.`);
+        },
+        onError: () => {
+            showError(t`Failed to start Google Sheets sync.`);
+        }
+    });
 
     const showStripeUpgradeNotice = account?.stripe_platform === StripePlatform.Canada.valueOf()
         && account?.stripe_connect_setup_complete
@@ -110,19 +122,30 @@ export const EventDashboard = () => {
 
     return (
         <PageBody>
-            <PageTitle style={{marginBottom: 0}}>
-                {!isMobile && (
-                    <Trans>
-                        Welcome back{me?.first_name && ', ' + me?.first_name} 👋
-                    </Trans>
-                )}
+            <Group justify="space-between" align="center" mb="md">
+                <PageTitle style={{marginBottom: 0}}>
+                    {!isMobile && (
+                        <Trans>
+                            Welcome back{me?.first_name && ', ' + me?.first_name} 👋
+                        </Trans>
+                    )}
 
-                {isMobile && (
-                    <Trans>
-                        Hi {me?.first_name && me?.first_name} 👋
-                    </Trans>
-                )}
-            </PageTitle>
+                    {isMobile && (
+                        <Trans>
+                            Hi {me?.first_name && me?.first_name} 👋
+                        </Trans>
+                    )}
+                </PageTitle>
+                <Button 
+                    leftSection={<IconCloudUpload size={16} />} 
+                    onClick={() => syncMutation.mutate()}
+                    loading={syncMutation.isPending}
+                    variant="light"
+                    color="green"
+                >
+                    <Trans>Sync Google Sheets</Trans>
+                </Button>
+            </Group>
 
             {!event && <DashBoardSkeleton/>}
 

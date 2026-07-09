@@ -218,7 +218,7 @@ use HiEvents\Http\Actions\Webhooks\EditWebhookAction;
 use HiEvents\Http\Actions\Webhooks\GetWebhookAction;
 use HiEvents\Http\Actions\Webhooks\GetWebhookLogsAction;
 use HiEvents\Http\Actions\Webhooks\GetWebhooksAction;
-use HiEvents\Http\Actions\Admin\GoogleSheets\SyncGoogleSheetsAction;
+use HiEvents\Http\Actions\Events\GoogleSheets\SyncGoogleSheetsAction;
 use Illuminate\Routing\Router;
 
 /** @var Router|Router $router */
@@ -448,6 +448,9 @@ $router->middleware(['auth:api'])->group(
         // Images
         $router->post('/images', CreateImageAction::class);
         $router->delete('/images/{image_id}', DeleteImageAction::class);
+
+        // Integrations
+        $router->post('/events/{event_id}/integrations/google-sheets/sync', SyncGoogleSheetsAction::class);
     }
 );
 
@@ -488,9 +491,6 @@ $router->prefix('/admin')->middleware(['auth:api'])->group(
 
         // System Info
         $router->get('/system-info', GetSystemInfoAction::class);
-
-        // Integrations
-        $router->post('/integrations/google-sheets/sync', SyncGoogleSheetsAction::class);
     }
 );
 

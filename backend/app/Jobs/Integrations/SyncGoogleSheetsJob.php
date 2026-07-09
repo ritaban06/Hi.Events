@@ -22,6 +22,10 @@ class SyncGoogleSheetsJob implements ShouldQueue
 
     public int $timeout = 3600;
 
+    public function __construct(private readonly int $eventId)
+    {
+    }
+
     public function handle(): void
     {
         $spreadsheetId = config('services.google_sheets.spreadsheet_id');
@@ -48,9 +52,9 @@ class SyncGoogleSheetsJob implements ShouldQueue
 
             $service = new Google_Service_Sheets($client);
 
-            $this->syncOrders($service, $spreadsheetId);
-            $this->syncAttendees($service, $spreadsheetId);
-            $this->syncCheckIns($service, $spreadsheetId);
+            $this->syncOrders($service, $spreadsheetId, $this->eventId);
+            $this->syncAttendees($service, $spreadsheetId, $this->eventId);
+            $this->syncCheckIns($service, $spreadsheetId, $this->eventId);
 
         } catch (\Throwable $e) {
             Log::error('Google Sheets Sync Failed: ' . $e->getMessage(), ['exception' => $e]);
@@ -58,10 +62,10 @@ class SyncGoogleSheetsJob implements ShouldQueue
         }
     }
 
-    private function syncOrders(Google_Service_Sheets $service, string $spreadsheetId): void
+    private function syncOrders(Google_Service_Sheets $service, string $spreadsheetId, int $eventId): void
     {
-        // For large datasets, it's better to chunk, but we'll use all() for simplicity unless it fails
-        $orders = Order::all();
+        // For large datasets, it's better to chunk, but we'll use get() for simplicity unless it fails
+        $orders = Order::where('event_id', $eventId)->get();
         $data = [
             ['ID', 'Short ID', 'Event ID', 'First Name', 'Last Name', 'Email', 'Total Gross', 'Currency', 'Status', 'Payment Status', 'Created At']
         ];
@@ -85,9 +89,9 @@ class SyncGoogleSheetsJob implements ShouldQueue
         $this->updateSheet($service, $spreadsheetId, 'Orders', $data);
     }
 
-    private function syncAttendees(Google_Service_Sheets $service, string $spreadsheetId): void
+    private function syncAttendees(Google_Service_Sheets $service, string $spreadsheetId, int $eventId): void
     {
-        $attendees = Attendee::all();
+        $attendees = Attendee::where('event_id', $eventId)->get();
         $data = [
             ['ID', 'Short ID', 'Order ID', 'Event ID', 'First Name', 'Last Name', 'Email', 'Status', 'Checked In At', 'Created At']
         ];
@@ -110,9 +114,11 @@ class SyncGoogleSheetsJob implements ShouldQueue
         $this->updateSheet($service, $spreadsheetId, 'Attendees', $data);
     }
 
-    private function syncCheckIns(Google_Service_Sheets $service, string $spreadsheetId): void
+    private function syncCheckIns(Google_Service_Sheets $service, string $spreadsheetId, int $eventId): void
     {
-        $checkIns = AttendeeCheckIn::with('attendee')->get();
+        $checkIns = AttendeeCheckIn::whereHas('attendee', function ($query) use ($eventId) {
+            $query->where('event_id', $eventId);
+        })->with('attendee')->get();
         $data = [
             ['ID', 'Check In List ID', 'Attendee ID', 'Attendee Name', 'Attendee Email', 'Created At']
         ];
