@@ -218,6 +218,7 @@ use HiEvents\Http\Actions\Webhooks\EditWebhookAction;
 use HiEvents\Http\Actions\Webhooks\GetWebhookAction;
 use HiEvents\Http\Actions\Webhooks\GetWebhookLogsAction;
 use HiEvents\Http\Actions\Webhooks\GetWebhooksAction;
+use HiEvents\Http\Actions\Admin\GoogleSheets\SyncGoogleSheetsAction;
 use Illuminate\Routing\Router;
 
 /** @var Router|Router $router */
@@ -487,6 +488,9 @@ $router->prefix('/admin')->middleware(['auth:api'])->group(
 
         // System Info
         $router->get('/system-info', GetSystemInfoAction::class);
+
+        // Integrations
+        $router->post('/integrations/google-sheets/sync', SyncGoogleSheetsAction::class);
     }
 );
 

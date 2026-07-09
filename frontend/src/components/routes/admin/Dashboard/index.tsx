@@ -1,4 +1,4 @@
-import {Container, Title, Text, Paper, Stack, Group, SimpleGrid, Skeleton, Badge, Anchor, Table} from "@mantine/core";
+import {Container, Title, Text, Paper, Stack, Group, SimpleGrid, Skeleton, Badge, Anchor, Table, Button} from "@mantine/core";
 import {t, Trans} from "@lingui/macro";
 import {
     IconUsers,
@@ -10,8 +10,13 @@ import {
     IconEye,
     IconCurrencyDollar,
     IconShoppingCart,
-    IconUserPlus
+    IconShoppingCart,
+    IconUserPlus,
+    IconCloudUpload
 } from "@tabler/icons-react";
+import {useMutation} from "@tanstack/react-query";
+import {adminClient} from "../../../../api/admin.client";
+import {showSuccess, showError} from "../../../../utilites/notifications";
 import {useGetMe} from "../../../../queries/useGetMe";
 import {useGetAdminStats} from "../../../../queries/useGetAdminStats";
 import {useGetUpcomingEvents} from "../../../../queries/useGetUpcomingEvents";
@@ -31,6 +36,16 @@ const AdminDashboard = () => {
     const {data: stats, isLoading} = useGetAdminStats();
     const {data: upcomingEvents, isLoading: isLoadingEvents} = useGetUpcomingEvents(10);
     const {data: dashboardData, isLoading: isLoadingDashboard} = useGetAdminDashboardData({days: 14, limit: 10});
+
+    const syncMutation = useMutation({
+        mutationFn: () => adminClient.syncGoogleSheets(),
+        onSuccess: () => {
+            showSuccess(t`Google Sheets sync has been started in the background.`);
+        },
+        onError: () => {
+            showError(t`Failed to start Google Sheets sync.`);
+        }
+    });
 
     const formatEventDate = (dateString: string, eventTimezone?: string) => {
         const eventDate = dayjs.utc(dateString);
@@ -65,16 +80,27 @@ const AdminDashboard = () => {
     return (
         <Container size="xl" p="xl">
             <Stack gap="xl">
-                <div>
-                    <Title order={1} mb="xs">
-                        <Trans>Admin Dashboard</Trans>
-                    </Title>
-                    {user && (
-                        <Text size="lg" c="dimmed">
-                            <Trans>Hello {user.full_name}, manage your platform from here.</Trans>
-                        </Text>
-                    )}
-                </div>
+                <Group justify="space-between" align="flex-start">
+                    <div>
+                        <Title order={1} mb="xs">
+                            <Trans>Admin Dashboard</Trans>
+                        </Title>
+                        {user && (
+                            <Text size="lg" c="dimmed">
+                                <Trans>Hello {user.full_name}, manage your platform from here.</Trans>
+                            </Text>
+                        )}
+                    </div>
+                    <Button 
+                        leftSection={<IconCloudUpload size={16} />} 
+                        onClick={() => syncMutation.mutate()}
+                        loading={syncMutation.isPending}
+                        variant="light"
+                        color="green"
+                    >
+                        <Trans>Sync Google Sheets</Trans>
+                    </Button>
+                </Group>
 
                 {/* Main Stats */}
                 <SimpleGrid cols={{base: 1, sm: 2, md: 4}} spacing="md">
