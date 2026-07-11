@@ -9,6 +9,7 @@ use Google_Service_Sheets_ValueRange;
 use HiEvents\Models\Attendee;
 use HiEvents\Models\AttendeeCheckIn;
 use HiEvents\Models\Order;
+use HiEvents\Models\Question;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -65,14 +66,19 @@ class SyncGoogleSheetsJob implements ShouldQueue
 
     private function syncOrders(Google_Service_Sheets $service, string $spreadsheetId, int $eventId): void
     {
+        $questions = Question::where('event_id', $eventId)->orderBy('order')->get();
+
         // For large datasets, it's better to chunk, but we'll use get() for simplicity unless it fails
-        $orders = Order::with('order_items.product')->where('event_id', $eventId)->get();
-        $data = [
-            ['ID', 'Short ID', 'Event ID', 'First Name', 'Last Name', 'Email', 'Products', 'Total Gross', 'Currency', 'Status', 'Payment Status', 'Created At']
-        ];
+        $orders = Order::with(['order_items.product', 'question_and_answer_views'])->where('event_id', $eventId)->get();
+        
+        $headers = ['ID', 'Short ID', 'Event ID', 'First Name', 'Last Name', 'Email', 'Products', 'Total Gross', 'Currency', 'Status', 'Payment Status', 'Created At'];
+        foreach ($questions as $question) {
+            $headers[] = $question->title;
+        }
+        $data = [$headers];
 
         foreach ($orders as $order) {
-            $data[] = [
+            $row = [
                 $order->id ?? '',
                 $order->short_id ?? '',
                 $order->event_id ?? '',
@@ -86,6 +92,19 @@ class SyncGoogleSheetsJob implements ShouldQueue
                 $order->payment_status ?? '',
                 $this->formatIstDate($order->created_at),
             ];
+
+            foreach ($questions as $question) {
+                $answerViews = $order->question_and_answer_views->where('question_id', $question->id);
+                $answers = [];
+                foreach ($answerViews as $view) {
+                    if ($view->answer) {
+                        $answers[] = is_array($view->answer) ? implode(', ', $view->answer) : $view->answer;
+                    }
+                }
+                $row[] = implode(' | ', array_filter($answers));
+            }
+
+            $data[] = $row;
         }
 
         $this->updateSheet($service, $spreadsheetId, 'Orders', $data);
