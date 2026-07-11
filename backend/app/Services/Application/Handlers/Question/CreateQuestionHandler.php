@@ -30,7 +30,9 @@ class CreateQuestionHandler
             ->setRequired($createQuestionDTO->required)
             ->setOptions($createQuestionDTO->options)
             ->setIsHidden($createQuestionDTO->is_hidden)
-            ->setDescription($this->purifier->purify($createQuestionDTO->description));
+            ->setDescription($this->purifier->purify($createQuestionDTO->description))
+            ->setMinSelections($createQuestionDTO->min_selections)
+            ->setMaxSelections($createQuestionDTO->max_selections);
 
         return $this->createQuestionService->createQuestion(
             $question,

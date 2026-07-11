@@ -41,6 +41,8 @@ class EditQuestionAction extends BaseAction
                 'is_hidden' => $request->boolean('is_hidden'),
                 'belongs_to' => QuestionBelongsTo::fromName($request->input('belongs_to')),
                 'description' => $request->input('description'),
+                'min_selections' => $request->input('min_selections'),
+                'max_selections' => $request->input('max_selections'),
             ]));
 
         return $this->resourceResponse(QuestionResource::class, $question);

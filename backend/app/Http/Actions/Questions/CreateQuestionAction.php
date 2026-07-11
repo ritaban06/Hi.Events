@@ -34,6 +34,8 @@ class CreateQuestionAction extends BaseAction
             'belongs_to' => $request->input('belongs_to'),
             'is_hidden' => $request->boolean('is_hidden'),
             'description' => $request->input('description'),
+            'min_selections' => $request->input('min_selections'),
+            'max_selections' => $request->input('max_selections'),
         ]));
 
         return $this->resourceResponse(

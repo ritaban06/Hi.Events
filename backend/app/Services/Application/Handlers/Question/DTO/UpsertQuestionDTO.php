@@ -18,6 +18,8 @@ class UpsertQuestionDTO extends BaseDTO
         public bool              $is_hidden,
         public QuestionBelongsTo $belongs_to,
         public ?string           $description = null,
+        public ?int              $min_selections = null,
+        public ?int              $max_selections = null,
     )
     {
     }
