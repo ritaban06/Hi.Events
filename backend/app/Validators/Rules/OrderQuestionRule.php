@@ -51,7 +51,7 @@ class OrderQuestionRule extends BaseQuestionRule
                 $validationMessages[$key . '.answer'][] = 'Please select a valid option';
             }
             
-            if ($questionDomainObject->getType() === QuestionTypeEnum::CHECKBOX->name && is_array($answer)) {
+            if ($questionDomainObject->getType() === \HiEvents\DomainObjects\Enums\QuestionTypeEnum::CHECKBOX->name && is_array($answer)) {
                 $selectedCount = count($answer);
                 $minSelections = $questionDomainObject->getMinSelections();
                 $maxSelections = $questionDomainObject->getMaxSelections();
