@@ -22,6 +22,8 @@ class UpsertQuestionRequest extends BaseRequest
             'options' => 'max:2000|required_if:type,CHECKBOX,RADIO',
             'required' => 'required|boolean',
             'is_hidden' => 'required|boolean',
+            'min_selections' => 'nullable|integer|min:0',
+            'max_selections' => 'nullable|integer|min:0|gte:min_selections',
         ];
     }
 

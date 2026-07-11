@@ -707,6 +707,8 @@ export interface Question {
     product_ids?: number[];
     belongs_to: string;
     is_hidden: boolean;
+    min_selections?: number;
+    max_selections?: number;
 }
 
 export interface CapacityAssignment {
@@ -760,6 +762,8 @@ export interface QuestionRequestData {
     options: string[];
     product_ids?: string[];
     belongs_to: string;
+    min_selections?: number;
+    max_selections?: number;
 }
 
 export interface Message {
@@ -797,6 +801,7 @@ export enum QuestionType {
     RADIO = 'RADIO',
     DROPDOWN = 'DROPDOWN',
     DATE = 'DATE',
+    NUMBER = 'NUMBER',
 }
 
 export enum QuestionBelongsToType {

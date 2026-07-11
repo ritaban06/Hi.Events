@@ -16,6 +16,7 @@ enum QuestionTypeEnum
     case DROPDOWN;
     case MULTI_SELECT_DROPDOWN;
     case DATE;
+    case NUMBER;
 
     public static function getMultipleChoiceTypes(): array
     {

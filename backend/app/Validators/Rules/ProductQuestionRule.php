@@ -87,7 +87,21 @@ class ProductQuestionRule extends BaseQuestionRule
                 }
 
                 if (!$questionDomainObject->isAnswerValid($answer)) {
-                    $validationMessages[$key . '.answer'][] = __('Please select an option');
+                    $validationMessages[$key . '.answer'][] = __('Please select a valid option');
+                }
+                
+                if ($questionDomainObject->getType() === \HiEvents\DomainObjects\Enums\QuestionTypeEnum::CHECKBOX->name && is_array($answer)) {
+                    $selectedCount = count($answer);
+                    $minSelections = $questionDomainObject->getMinSelections();
+                    $maxSelections = $questionDomainObject->getMaxSelections();
+                    
+                    if ($minSelections !== null && $minSelections > 0 && $selectedCount < $minSelections) {
+                        $validationMessages[$key . '.answer'][] = __('Please select at least :min options.', ['min' => $minSelections]);
+                    }
+                    
+                    if ($maxSelections !== null && $maxSelections > 0 && $selectedCount > $maxSelections) {
+                        $validationMessages[$key . '.answer'][] = __('Please select at most :max options.', ['max' => $maxSelections]);
+                    }
                 }
 
                 $validationMessages = $this->validateResponseLength($questionDomainObject, $response, $key, $validationMessages);

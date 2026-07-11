@@ -46,6 +46,10 @@ class QuestionDomainObject extends Generated\QuestionDomainObjectAbstract
             return false;
         }
 
+        if ($this->getType() === QuestionTypeEnum::NUMBER->name) {
+            return is_numeric($answer);
+        }
+
         if (!$this->isPreDefinedChoice()) {
             return true;
         }

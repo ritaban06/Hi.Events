@@ -1,8 +1,9 @@
 import {CustomSelect, ItemProps} from "../../common/CustomSelect";
 import {t, Trans} from "@lingui/macro";
 import {ProductCategory, QuestionBelongsToType, QuestionType} from "../../../types.ts";
-import {Button, Group, Switch, TextInput} from "@mantine/core";
+import {Button, Group, Switch, TextInput, NumberInput} from "@mantine/core";
 import {
+    Icon123,
     IconAlignBoxLeftTop,
     IconCalendar,
     IconCircleCheck,
@@ -136,6 +137,12 @@ export const QuestionForm = ({form, productCategories}: QuestionFormProps) => {
             label: t`Date`,
             value: QuestionType.DATE,
             description: t`A date input. Perfect for asking for a date of birth etc.`,
+        },
+        {
+            icon: <Icon123/>,
+            label: t`Numbers`,
+            value: QuestionType.NUMBER,
+            description: t`A numeric input. Perfect for asking for quantities, ages, etc.`,
         }
     ];
     const multiAnswerQuestionTypes = [
@@ -204,6 +211,29 @@ export const QuestionForm = ({form, productCategories}: QuestionFormProps) => {
             )}
 
             {multiAnswerQuestionTypes.includes(form.values.type) && <Options form={form}/>}
+
+            {form.values.type === QuestionType.CHECKBOX && (
+                <Card>
+                    <h3 className={classes.optionsHeading}><Trans>Checkbox Validation Options</Trans></h3>
+                    <div className={classes.noOptionsMessage}>
+                        <Trans>0 for no limit.</Trans>
+                    </div>
+                    <Group grow mt="md">
+                        <NumberInput
+                            label={t`Select at least`}
+                            description={t`Forces user to pick a minimum number of boxes.`}
+                            min={0}
+                            {...form.getInputProps('min_selections')}
+                        />
+                        <NumberInput
+                            label={t`Select at most`}
+                            description={t`Stops user from picking too many boxes.`}
+                            min={0}
+                            {...form.getInputProps('max_selections')}
+                        />
+                    </Group>
+                </Card>
+            )}
 
             <Switch
                 mt={20}

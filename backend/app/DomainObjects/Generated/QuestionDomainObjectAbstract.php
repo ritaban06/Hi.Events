@@ -23,6 +23,8 @@ abstract class QuestionDomainObjectAbstract extends \HiEvents\DomainObjects\Abst
     final public const ORDER = 'order';
     final public const IS_HIDDEN = 'is_hidden';
     final public const DESCRIPTION = 'description';
+    final public const MIN_SELECTIONS = 'min_selections';
+    final public const MAX_SELECTIONS = 'max_selections';
 
     protected int $id;
     protected int $event_id;
@@ -37,6 +39,8 @@ abstract class QuestionDomainObjectAbstract extends \HiEvents\DomainObjects\Abst
     protected int $order = 1;
     protected bool $is_hidden = false;
     protected ?string $description = null;
+    protected ?int $min_selections = null;
+    protected ?int $max_selections = null;
 
     public function toArray(): array
     {
@@ -54,6 +58,8 @@ abstract class QuestionDomainObjectAbstract extends \HiEvents\DomainObjects\Abst
                     'order' => $this->order ?? null,
                     'is_hidden' => $this->is_hidden ?? null,
                     'description' => $this->description ?? null,
+                    'min_selections' => $this->min_selections ?? null,
+                    'max_selections' => $this->max_selections ?? null,
                 ];
     }
 
@@ -198,5 +204,27 @@ abstract class QuestionDomainObjectAbstract extends \HiEvents\DomainObjects\Abst
     public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    public function setMinSelections(?int $min_selections): self
+    {
+        $this->min_selections = $min_selections;
+        return $this;
+    }
+
+    public function getMinSelections(): ?int
+    {
+        return $this->min_selections;
+    }
+
+    public function setMaxSelections(?int $max_selections): self
+    {
+        $this->max_selections = $max_selections;
+        return $this;
+    }
+
+    public function getMaxSelections(): ?int
+    {
+        return $this->max_selections;
     }
 }

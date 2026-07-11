@@ -1,6 +1,6 @@
 import {Product, Question, QuestionType} from "../../../types.ts";
 import {UseFormReturnType} from "@mantine/form";
-import {Box, Checkbox, ComboboxItem, Group, NativeSelect, Radio, Select, Textarea, TextInput} from "@mantine/core";
+import {Box, Checkbox, ComboboxItem, Group, NativeSelect, Radio, Select, Textarea, TextInput, NumberInput} from "@mantine/core";
 import {t} from "@lingui/macro";
 import countries from "../../../../data/countries.json";
 import {InputGroup} from "../InputGroup";
@@ -80,6 +80,22 @@ const SingleLineTextInput = ({question, name, form}: QuestionInputProps) => {
     return (
         <>
             <TextInput
+                classNames={{
+                    description: classes.descriptionWithNoStyle,
+                }}
+                {...form.getInputProps(`${name}.answer`)}
+                withAsterisk={question.required}
+                label={question.title}
+                description={(<UserGeneratedContent dangerouslySetInnerHTML={{__html: question.description || ''}}/>)}
+            />
+        </>
+    );
+}
+
+const NumberQuestion = ({question, name, form}: QuestionInputProps) => {
+    return (
+        <>
+            <NumberInput
                 classNames={{
                     description: classes.descriptionWithNoStyle,
                 }}
@@ -200,6 +216,9 @@ export const QuestionInput = ({question, name, form}: QuestionInputProps) => {
             break;
         case QuestionType.DATE:
             input = <DateInput question={question} name={name} form={form}/>;
+            break;
+        case QuestionType.NUMBER:
+            input = <NumberQuestion question={question} name={name} form={form}/>;
             break;
     }
 
