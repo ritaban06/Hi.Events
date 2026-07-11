@@ -383,6 +383,11 @@ export const OrdersTable = ({orders, event}: OrdersTableProps) => {
                                     <IconCreditCard size={16}/>
                                     <Text>{t`Stripe`}</Text>
                                 </>
+                            ) : order.payment_provider === 'RAZORPAY' ? (
+                                <>
+                                    <IconCreditCard size={16}/>
+                                    <Text>{t`Razorpay`}</Text>
+                                </>
                             ) : order.payment_provider === 'OFFLINE' ? (
                                 <>
                                     <IconCash size={16}/>
