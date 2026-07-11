@@ -33,4 +33,13 @@ class QuestionAnswerDomainObject extends Generated\QuestionAnswerDomainObjectAbs
     {
         return $this->question;
     }
+
+    public function setAnswer(mixed $answer): self
+    {
+        if (is_scalar($answer)) {
+            $answer = (string) $answer;
+        }
+
+        return parent::setAnswer($answer);
+    }
 }

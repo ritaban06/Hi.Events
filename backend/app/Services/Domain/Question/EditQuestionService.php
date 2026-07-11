@@ -41,6 +41,8 @@ class EditQuestionService
                     QuestionDomainObjectAbstract::OPTIONS => $question->getOptions(),
                     QuestionDomainObjectAbstract::IS_HIDDEN => $question->getIsHidden(),
                     QuestionDomainObjectAbstract::DESCRIPTION => $this->purifier->purify($question->getDescription()),
+                    QuestionDomainObjectAbstract::MIN_SELECTIONS => $question->getMinSelections(),
+                    QuestionDomainObjectAbstract::MAX_SELECTIONS => $question->getMaxSelections(),
                 ],
                 productIds: $productIds
             );
